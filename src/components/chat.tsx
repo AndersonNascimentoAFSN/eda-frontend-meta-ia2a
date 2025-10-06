@@ -5,7 +5,7 @@ import { useChat } from '@ai-sdk/react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { FileUpload } from '@/components/file-upload'
-import { Send, Bot, User, BarChart3 } from 'lucide-react'
+import { Send, Bot, User, BarChart3, Paperclip } from 'lucide-react'
 
 export function Chat() {
   const [input, setInput] = useState('')
@@ -202,23 +202,48 @@ export function Chat() {
 
         {/* Input */}
         <div className="border-t p-4 bg-gray-50 rounded-b-lg">
-          {messages.length > 0 && (
-            <div className="mb-4">
-              <FileUpload
-                onFileSelect={handleFileSelect}
-              // disabled={isLoading} 
+          <form onSubmit={handleSubmit} className="flex space-x-3 items-end">
+            <div className="flex-1 relative">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Faça uma pergunta sobre seus dados ou análise de dados..."
+                className="w-full border border-gray-300 rounded-full px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              // disabled={isLoading}
               />
+              
+              {/* Botão de anexo */}
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                        handleFileSelect(file)
+                      } else {
+                        sendMessage({
+                          text: `❌ Formato de arquivo inválido. Por favor, selecione apenas arquivos CSV (.csv).`
+                        })
+                      }
+                      e.target.value = '' // Reset input
+                    }
+                  }}
+                  className="hidden"
+                  id="file-upload-clip"
+                  aria-label="Anexar arquivo CSV"
+                />
+                <label 
+                  htmlFor="file-upload-clip" 
+                  className="cursor-pointer p-1 rounded-full hover:bg-gray-200 transition-colors"
+                  title="Anexar arquivo CSV"
+                >
+                  <Paperclip className="w-5 h-5 text-gray-500 hover:text-gray-700" />
+                </label>
+              </div>
             </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="flex space-x-3">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Faça uma pergunta sobre seus dados ou análise de dados..."
-              className="flex-1 border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            // disabled={isLoading}
-            />
+            
             <Button
               type="submit"
               // disabled={isLoading || !input.trim()}
@@ -229,7 +254,7 @@ export function Chat() {
           </form>
 
           <p className="text-xs text-gray-500 mt-2 text-center">
-            Faça upload de arquivos CSV • Pergunte sobre análise de dados • Obtenha insights e recomendações
+            Use o 📎 para anexar CSV • Pergunte sobre análise de dados • Obtenha insights e recomendações
           </p>
         </div>
       </div>
