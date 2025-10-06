@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EDA Frontend
 
-## Getting Started
+🤖 **Assistente de IA para Análise Exploratória de Dados**
 
-First, run the development server:
+Frontend Next.js com chat conversacional usando Vercel AI SDK para análise exploratória de dados com integração completa ao backend EDA.
+
+## ✨ Funcionalidades
+
+- 💬 **Chat Conversacional**: Interface de IA para interação natural
+- 📁 **Upload de CSV**: Drag & drop ou seleção de arquivos
+- ☁️ **Storage em Nuvem**: Upload direto para Cloudflare R2
+- 📊 **Análise Automática**: Processamento completo no backend
+- 📈 **Insights Inteligentes**: Explicações e recomendações da IA
+- ⏱️ **Tempo Real**: Monitoramento de progresso ao vivo
+
+## 🚀 Início Rápido
+
+### 1. Configuração
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clone e instale dependências
+cd eda-frontend
+npm install
+
+# Configure variáveis de ambiente
+cp .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Variáveis de Ambiente
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Edite `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+EDA_BACKEND_URL=http://localhost:8000
+NEXT_PUBLIC_EDA_BACKEND_URL=http://localhost:8000
+```
 
-## Learn More
+### 3. Execução
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Desenvolvimento
+npm run dev
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Produção
+npm run build && npm start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Acesse: http://localhost:3000
 
-## Deploy on Vercel
+## 🛠️ Stack Tecnológica
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Framework**: Next.js 15 + TypeScript
+- **UI**: Tailwind CSS + Radix UI
+- **IA**: Vercel AI SDK + OpenAI
+- **Validação**: Zod
+- **Ícones**: Lucide React
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📱 Como Usar
+
+1. **Abra a aplicação** em http://localhost:3000
+2. **Faça upload** de um arquivo CSV
+3. **Aguarde** o processamento automático
+4. **Converse** com a IA sobre seus dados
+5. **Obtenha insights** e recomendações
+
+## 🔧 Desenvolvimento
+
+```bash
+# Comandos disponíveis
+npm run dev      # Servidor de desenvolvimento
+npm run build    # Build de produção
+npm run start    # Servidor de produção
+npm run lint     # Verificação de código
+```
+
+## 📊 Integração com Backend
+
+Conecta-se ao backend EDA para:
+- Obter URLs pré-assinadas para upload
+- Iniciar análises de dados
+- Monitorar progresso
+- Recuperar resultados
+
+## 📝 Documentação
+
+Veja [DOCUMENTATION.md](./DOCUMENTATION.md) para documentação completa.
+
+## 🎯 Status
+
+✅ **Compilação**: Sem erros  
+✅ **Tipos**: Totalmente tipado  
+✅ **Interface**: Responsiva e moderna  
+✅ **Integração**: Backend conectado  
+✅ **IA**: Tools funcionais  
+
+---
+
+**Desenvolvido com ❤️ usando Next.js e Vercel AI SDK**
