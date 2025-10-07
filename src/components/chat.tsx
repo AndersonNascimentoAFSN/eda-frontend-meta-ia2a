@@ -4,7 +4,7 @@ import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { FileUpload } from '@/components/file-upload'
+import { FileUploadDirect } from '@/components/file-upload-direct'
 import { Send, Bot, User, BarChart3, Paperclip } from 'lucide-react'
 import { Streamdown } from 'streamdown';
 
@@ -67,7 +67,8 @@ export function Chat() {
                 ou me faça perguntas sobre técnicas de análise de dados e melhores práticas.
               </p>
 
-              <FileUpload
+              {/* Usar upload direto para arquivos grandes (melhor para Vercel) */}
+              <FileUploadDirect
                 onFileUploaded={handleFileUploaded}
               // disabled={isLoading} 
               />
@@ -296,20 +297,36 @@ export function Chat() {
                     if (file) {
                       (async () => {
                         if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
-                          // Criar um FormData e fazer upload via API
-                          const formData = new FormData()
-                          formData.append('file', file)
-                          
                           try {
-                            const response = await fetch('/api/upload', {
+                            // Passo 1: Obter URL pré-assinada
+                            const response = await fetch('/api/presigned-upload', {
                               method: 'POST',
-                              body: formData
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                fileName: file.name,
+                                fileSize: file.size
+                              })
                             })
                             
                             const result = await response.json()
                             
                             if (result.success) {
-                              handleFileUploaded(result.file_key, result.fileName, result.fileSize)
+                              // Passo 2: Upload direto para R2
+                              const uploadResponse = await fetch(result.upload_url, {
+                                method: 'PUT',
+                                body: file,
+                                headers: {
+                                  'Content-Type': 'text/csv',
+                                },
+                              })
+                              
+                              if (uploadResponse.ok) {
+                                handleFileUploaded(result.file_key, result.fileName, result.fileSize)
+                              } else {
+                                throw new Error(`Upload falhou: ${uploadResponse.status}`)
+                              }
                             } else {
                               sendMessage({
                                 text: `❌ Erro no upload: ${result.error}`
