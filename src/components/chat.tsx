@@ -4,9 +4,10 @@ import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { FileUpload } from '@/components/file-upload'
+import { ServerUpload } from '@/components/server-upload'
+import { AnalysisContext } from '@/components/analysis-context'
 import { Send, Bot, User, BarChart3, Paperclip } from 'lucide-react'
-import { Streamdown } from 'streamdown';
+import { useFileUpload } from '@/hooks/use-file-upload'
 
 export function Chat() {
   const [input, setInput] = useState('')
@@ -16,35 +17,60 @@ export function Chat() {
     }),
   })
 
+  const { uploadFile } = useFileUpload()
+
   const handleFileSelect = async (file: File) => {
     try {
-      // Converter arquivo para base64
-      const reader = new FileReader()
-      reader.onload = async () => {
-        const base64Content = reader.result?.toString().split(',')[1]
-        if (base64Content) {
-          // Enviar uma única mensagem com texto visível e dados ocultos
-          sendMessage({
-            text: `Carreguei um arquivo CSV "${file.name}" para análise. Por favor, processe-o e inicie a análise exploratória de dados.
+      // Enviar mensagem informativa sobre o início do upload
+      // sendMessage({
+      //   text: `📤 Fazendo upload do arquivo CSV "${file.name}" (${(file.size / 1024 / 1024).toFixed(2)}MB)...`
+      // });
 
-[DADOS_ARQUIVO] ARQUIVO_CSV_BASE64: ${base64Content} NOME_ARQUIVO: ${file.name}`
-          })
-        }
-      }
-      reader.readAsDataURL(file)
-    } catch (error) {
-      console.error('Error uploading file:', error)
+      // Fazer upload usando server action
+      const result = await uploadFile(file)
+
+      // Enviar mensagem de sucesso
       sendMessage({
-        text: `Erro ao carregar o arquivo "${file.name}". Por favor, tente novamente.`,
-      })
+        text: `✅ Upload concluído com sucesso! 
+
+📄 **Arquivo:** ${file.name}
+📊 **Análise iniciada:** ID ${result?.analysisId || 'N/A'}
+🔄 **Status:** ${result?.status || 'iniciado'}
+
+A análise está sendo processada. Você pode verificar o progresso ou fazer perguntas sobre os dados.`
+      });
+
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      sendMessage({
+        text: `❌ Erro ao fazer upload do arquivo "${file.name}": ${error instanceof Error ? error.message : 'Erro desconhecido'}. Por favor, tente novamente.`
+      });
     }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (input.trim()) {
+      let messageText = input.trim()
+
+      // Se a pergunta parece ser sobre análise, incluir ID automaticamente
+      const analysisKeywords = ['análise', 'resultado', 'status', 'progresso', 'dados', 'estatística']
+      const hasAnalysisKeyword = analysisKeywords.some(keyword =>
+        messageText.toLowerCase().includes(keyword)
+      )
+
+      if (hasAnalysisKeyword) {
+        // Tentar obter o ID da análise ativa
+        const latestAnalysis = typeof window !== 'undefined' ?
+          JSON.parse(localStorage.getItem('eda_active_analyses') || '[]').pop() : null
+
+        if (latestAnalysis?.id) {
+          messageText += `\n\n[ID da análise: ${latestAnalysis.id}]`
+        }
+      }
+
       sendMessage({
-        text: input
+        text: messageText
       })
       setInput('')
     }
@@ -66,6 +92,9 @@ export function Chat() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Contexto de análise ativa */}
+          {messages.length > 0 && <AnalysisContext />}
+
           {messages.length === 0 && (
             <div className="text-center py-12">
               <Bot className="mx-auto h-16 w-16 text-gray-400 mb-6" />
@@ -75,9 +104,28 @@ export function Chat() {
                 ou me faça perguntas sobre técnicas de análise de dados e melhores práticas.
               </p>
 
-              <FileUpload
-                onFileSelect={handleFileSelect}
-              // disabled={isLoading} 
+              <ServerUpload
+                onUploadStart={(fileName) => {
+                  sendMessage({
+                    text: `📤 Iniciando upload do arquivo "${fileName}"...`
+                  });
+                }}
+                onUploadComplete={(result) => {
+                  sendMessage({
+                    text: `✅ Upload concluído com sucesso! 
+
+📄 **Arquivo:** ${result.fileName}
+📊 **Análise iniciada:** ID ${result.analysisId}
+🔄 **Status:** ${result.status}
+
+A análise está sendo processada. Você pode verificar o progresso ou fazer perguntas sobre os dados.`
+                  });
+                }}
+                onUploadError={(error) => {
+                  sendMessage({
+                    text: `❌ Erro durante o upload: ${error}. Por favor, tente novamente.`
+                  });
+                }}
               />
             </div>
           )}
@@ -104,60 +152,13 @@ export function Chat() {
                   {message.parts?.map((part, index) => {
                     switch (part.type) {
                       case 'text':
-                        // Filtrar apenas a parte dos dados, mantendo o texto principal
+                        // Filtrar dados grandes, mantendo apenas o texto principal
                         const text = part.text
                         const dadosIndex = text.indexOf('[DADOS_ARQUIVO]')
                         if (dadosIndex !== -1) {
-                          return text.substring(0, dadosIndex).trim()
+                          return <span key={index}>{text.substring(0, dadosIndex).trim()}</span>
                         }
-                        return <Streamdown key={index}>{part.text}</Streamdown>
-                      case 'tool-uploadAndAnalyzeData': {
-                        const callId = part?.toolCallId;
-
-                        switch (part.state) {
-                          case 'input-streaming':
-                            return (
-                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
-                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                <span>Preparando upload do arquivo...</span>
-                              </div>
-                            )
-                          case 'input-available':
-                            return (
-                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
-                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                <span>Fazendo upload e iniciando análise...</span>
-                              </div>
-                            );
-                          case 'output-available':
-                            const result = part?.output as { success?: boolean, fileName?: string, analysisId?: string, status?: string };
-                            return (
-                              <div key={callId} className="bg-green-50 border-l-4 border-green-400 p-3 rounded-r">
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-green-600">✅</span>
-                                  <span className="font-medium text-green-800">Upload Concluído!</span>
-                                </div>
-                                {result?.success && (
-                                  <div className="mt-2 text-sm text-green-700">
-                                    <p>📄 Arquivo: <span className="font-medium">{result.fileName}</span></p>
-                                    <p>🆔 ID da Análise: <span className="font-mono text-xs">{result.analysisId}</span></p>
-                                    <p>📊 Status: <span className="capitalize">{result.status}</span></p>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          case 'output-error':
-                            return (
-                              <div key={callId} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-red-600">❌</span>
-                                  <span className="font-medium text-red-800">Erro no Upload</span>
-                                </div>
-                                <p className="mt-2 text-sm text-red-700">{part.errorText || 'Erro desconhecido durante o upload'}</p>
-                              </div>
-                            );
-                        }
-                      }
+                        return <span key={index}>{part.text}</span>
 
                       case 'tool-checkAnalysisStatus': {
                         const callId = part?.toolCallId;

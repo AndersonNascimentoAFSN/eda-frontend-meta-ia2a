@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@/lib/utils'
-import { PresignedUrlRequest, PresignedUrlResponse, AnalysisStartRequest, AnalysisStartResponse, AnalysisStatus, EdaAnalysisResponse } from '@/types/eda'
+import { PresignedUrlResponse, AnalysisStartRequest, AnalysisStartResponse, AnalysisStatus, EdaAnalysisResponse } from '@/types/eda'
 
 export class EdaService {
   static async getPresignedUrl(fileName: string): Promise<PresignedUrlResponse> {

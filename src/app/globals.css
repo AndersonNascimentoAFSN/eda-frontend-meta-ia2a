@@ -48,10 +48,38 @@
 
 * {
   border-color: hsl(var(--border));
-  box-sizing: border-box;
 }
 
 body {
-  background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  background: hsl(var(--background));
 }
+
+/* Progress bar utilities */
+[data-progress="0"] { width: 0%; }
+[data-progress="25"] { width: 25%; }
+[data-progress="50"] { width: 50%; }
+[data-progress="75"] { width: 75%; }
+[data-progress="100"] { width: 100%; }
+
+.progress-bar {
+  transition: width 0.5s ease-in-out;
+}
+
+.progress-0 { width: 0%; }
+.progress-25 { width: 25%; }
+.progress-50 { width: 50%; }
+.progress-75 { width: 75%; }
+.progress-100 { width: 100%; }
+
+/* Progress bar custom styling */
+[data-progress] {
+  width: var(--progress-width, 0%);
+  transition: width 0.3s ease-in-out;
+}
+
+[data-progress="0"] { --progress-width: 0%; }
+[data-progress="25"] { --progress-width: 25%; }
+[data-progress="50"] { --progress-width: 50%; }
+[data-progress="75"] { --progress-width: 75%; }
+[data-progress="100"] { --progress-width: 100%; }
