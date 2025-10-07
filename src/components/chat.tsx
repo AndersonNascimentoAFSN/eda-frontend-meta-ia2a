@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { FileUpload } from '@/components/file-upload'
 import { Send, Bot, User, BarChart3, Paperclip } from 'lucide-react'
+import { Streamdown } from 'streamdown';
 
 export function Chat() {
   const [input, setInput] = useState('')
@@ -100,7 +101,7 @@ export function Chat() {
                   }`}
               >
                 <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {message.parts?.map((part) => {
+                  {message.parts?.map((part, index) => {
                     switch (part.type) {
                       case 'text':
                         // Filtrar apenas a parte dos dados, mantendo o texto principal
@@ -109,23 +110,50 @@ export function Chat() {
                         if (dadosIndex !== -1) {
                           return text.substring(0, dadosIndex).trim()
                         }
-                        return text;
+                        return <Streamdown key={index}>{part.text}</Streamdown>
                       case 'tool-uploadAndAnalyzeData': {
                         const callId = part?.toolCallId;
 
                         switch (part.state) {
                           case 'input-streaming':
                             return (
-                              <div key={callId}>Preparando solicitação de análise...</div>
+                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Preparando upload do arquivo...</span>
+                              </div>
                             )
                           case 'input-available':
-                            return <div key={callId}>Iniciando solicitação de análise...</div>;
+                            return (
+                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Fazendo upload e iniciando análise...</span>
+                              </div>
+                            );
                           case 'output-available':
-                            return <div key={callId}>Análise: {JSON.stringify(part?.output)}</div>;
+                            const result = part?.output as { success?: boolean, fileName?: string, analysisId?: string, status?: string };
+                            return (
+                              <div key={callId} className="bg-green-50 border-l-4 border-green-400 p-3 rounded-r">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-green-600">✅</span>
+                                  <span className="font-medium text-green-800">Upload Concluído!</span>
+                                </div>
+                                {result?.success && (
+                                  <div className="mt-2 text-sm text-green-700">
+                                    <p>📄 Arquivo: <span className="font-medium">{result.fileName}</span></p>
+                                    <p>🆔 ID da Análise: <span className="font-mono text-xs">{result.analysisId}</span></p>
+                                    <p>📊 Status: <span className="capitalize">{result.status}</span></p>
+                                  </div>
+                                )}
+                              </div>
+                            );
                           case 'output-error':
                             return (
-                              <div key={callId}>
-                                Erro ao obter análise: {JSON.stringify(part.errorText)}
+                              <div key={callId} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-red-600">❌</span>
+                                  <span className="font-medium text-red-800">Erro no Upload</span>
+                                </div>
+                                <p className="mt-2 text-sm text-red-700">{part.errorText || 'Erro desconhecido durante o upload'}</p>
                               </div>
                             );
                         }
@@ -137,16 +165,60 @@ export function Chat() {
                         switch (part.state) {
                           case 'input-streaming':
                             return (
-                              <div key={callId}>Preparando solicitação de status da análise...</div>
+                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Verificando status da análise...</span>
+                              </div>
                             );
                           case 'input-available':
-                            return <div key={callId}>Obtendo status da análise...</div>;
+                            return (
+                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Consultando progresso...</span>
+                              </div>
+                            );
                           case 'output-available':
-                            return <div key={callId}>Status da análise: {JSON.stringify(part?.output)}</div>;
+                            const statusResult = part?.output as { success?: boolean, status?: string, progress?: number, isComplete?: boolean, message?: string };
+                            return (
+                              <div key={callId} className={`border-l-4 p-3 rounded-r ${statusResult?.isComplete ? 'bg-green-50 border-green-400' : 'bg-blue-50 border-blue-400'
+                                }`}>
+                                <div className="flex items-center space-x-2">
+                                  <span>{statusResult?.isComplete ? '✅' : '🔄'}</span>
+                                  <span className={`font-medium ${statusResult?.isComplete ? 'text-green-800' : 'text-blue-800'
+                                    }`}>
+                                    {statusResult?.isComplete ? 'Análise Concluída!' : 'Análise em Progresso'}
+                                  </span>
+                                </div>
+                                {statusResult?.progress !== undefined && (
+                                  <div className="mt-2">
+                                    <div className="flex justify-between text-sm">
+                                      <span>Progresso</span>
+                                      <span>{statusResult.progress}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                      <div
+                                        className={`bg-blue-600 h-2 rounded-full transition-all duration-300 ${statusResult.progress >= 100 ? 'w-full' :
+                                          statusResult.progress >= 75 ? 'w-3/4' :
+                                            statusResult.progress >= 50 ? 'w-1/2' :
+                                              statusResult.progress >= 25 ? 'w-1/4' : 'w-1/12'
+                                          }`}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                )}
+                                {statusResult?.message && (
+                                  <p className="mt-2 text-sm text-gray-700">{statusResult.message}</p>
+                                )}
+                              </div>
+                            );
                           case 'output-error':
                             return (
-                              <div key={callId}>
-                                Erro ao obter status da análise: {JSON.stringify(part.errorText)}
+                              <div key={callId} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-red-600">❌</span>
+                                  <span className="font-medium text-red-800">Erro ao Verificar Status</span>
+                                </div>
+                                <p className="mt-2 text-sm text-red-700">{part.errorText || 'Erro desconhecido'}</p>
                               </div>
                             );
                         }
@@ -157,15 +229,45 @@ export function Chat() {
 
                         switch (part.state) {
                           case 'input-streaming':
-                            return <div key={callId}>Preparando solicitação de resultado da análise...</div>
+                            return (
+                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Preparando relatório de resultados...</span>
+                              </div>
+                            )
                           case 'input-available':
-                            return <div key={callId}>Obtendo resultado da análise...</div>;
+                            return (
+                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Obtendo resultados da análise...</span>
+                              </div>
+                            );
                           case 'output-available':
-                            return <div key={callId}>Resultado da análise: {JSON.stringify(part?.output)}</div>;
+                            const analysisResult = part?.output as { success?: boolean, results?: Record<string, unknown>, analysisId?: string };
+                            return (
+                              <div key={callId} className="bg-green-50 border-l-4 border-green-400 p-3 rounded-r">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-green-600">📊</span>
+                                  <span className="font-medium text-green-800">Resultados da Análise</span>
+                                </div>
+                                {analysisResult?.success && (
+                                  <div className="mt-2 text-sm text-green-700">
+                                    <p>✅ Análise completa! Os resultados estão sendo processados...</p>
+                                    {analysisResult?.analysisId && (
+                                      <p className="mt-1">🆔 ID: <span className="font-mono text-xs">{analysisResult.analysisId}</span></p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
                           case 'output-error':
                             return (
-                              <div key={callId}>
-                                Erro ao obter resultado da análise: {JSON.stringify(part.errorText)}
+                              <div key={callId} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-red-600">❌</span>
+                                  <span className="font-medium text-red-800">Erro ao Obter Resultados</span>
+                                </div>
+                                <p className="mt-2 text-sm text-red-700">{part.errorText || 'Erro desconhecido ao buscar resultados'}</p>
                               </div>
                             );
                         }
@@ -183,21 +285,6 @@ export function Chat() {
               )}
             </div>
           ))}
-
-          {/* {isLoading && (
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <div className="bg-gray-100 text-gray-900 px-4 py-3 rounded-lg rounded-bl-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:0.1s]"></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                </div>
-              </div>
-            </div>
-          )} */}
         </div>
 
         {/* Input */}
@@ -211,7 +298,7 @@ export function Chat() {
                 className="w-full border border-gray-300 rounded-full px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               // disabled={isLoading}
               />
-              
+
               {/* Botão de anexo */}
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                 <input
@@ -234,8 +321,8 @@ export function Chat() {
                   id="file-upload-clip"
                   aria-label="Anexar arquivo CSV"
                 />
-                <label 
-                  htmlFor="file-upload-clip" 
+                <label
+                  htmlFor="file-upload-clip"
                   className="cursor-pointer p-1 rounded-full hover:bg-gray-200 transition-colors"
                   title="Anexar arquivo CSV"
                 >
@@ -243,7 +330,7 @@ export function Chat() {
                 </label>
               </div>
             </div>
-            
+
             <Button
               type="submit"
               // disabled={isLoading || !input.trim()}
