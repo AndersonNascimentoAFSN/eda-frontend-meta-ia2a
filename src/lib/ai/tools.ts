@@ -6,42 +6,21 @@ import { AnalysisTypeEnum } from '@/types/eda'
 // Armazenar análises ativas na sessão
 const activeAnalyses = new Map<string, string>()
 
-export const uploadAndAnalyzeDataTool = tool({
-  description: 'Upload a CSV file and start data analysis. This tool handles the complete flow: gets presigned URL, uploads file to R2, and starts analysis.',
+export const startAnalysisFromUploadTool = tool({
+  description: 'Start data analysis using a pre-uploaded CSV file. Use this after a file has been uploaded via the upload interface.',
   inputSchema: z.object({
-    fileName: z.string().describe('Name of the CSV file to upload'),
-    fileContent: z.string().describe('Base64 encoded content of the CSV file'),
+    fileKey: z.string().describe('File key from the upload (received after successful file upload)'),
+    fileName: z.string().describe('Original name of the uploaded CSV file'),
     analysisType: z.enum(AnalysisTypeEnum).optional().describe('Type of analysis to perform (optional)')
   }),
-  execute: async ({ fileName, fileContent, analysisType }) => {
+  execute: async ({ fileKey, fileName, analysisType }) => {
     try {
-      console.log('🔧 Starting uploadAndAnalyzeDataTool with:', { fileName, analysisType, contentLength: fileContent.length })
+      console.log('🔧 Starting analysis with pre-uploaded file:', { fileKey, fileName, analysisType })
 
-      // Converter base64 para File
-      const byteCharacters = atob(fileContent)
-      const byteNumbers = new Array(byteCharacters.length)
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i)
-      }
-      const byteArray = new Uint8Array(byteNumbers)
-      const file = new File([byteArray], fileName, { type: 'text/csv' })
-
-      console.log('📁 File created:', { name: file.name, size: file.size, type: file.type })
-
-      // 1. Obter URL pré-assinada
-      console.log('🔗 Getting presigned URL...')
-      const presignedData = await EdaService.getPresignedUrl(fileName)
-      console.log('✅ Got presigned URL:', presignedData)
-
-      // 2. Upload para R2
-      console.log('⬆️ Uploading to R2...')
-      await EdaService.uploadToR2(presignedData.upload_url, file)
-      console.log('✅ File uploaded to R2 successfully')
-
-      // 3. Iniciar análise
+      // Iniciar análise diretamente com file_key
       console.log('🚀 Starting analysis...')
       const analysisResponse = await EdaService.startAnalysis({
-        file_key: presignedData.file_key,
+        file_key: fileKey,
         analysis_type: analysisType
       })
       console.log('✅ Analysis started:', analysisResponse)
@@ -52,16 +31,17 @@ export const uploadAndAnalyzeDataTool = tool({
       return {
         success: true,
         analysisId: analysisResponse.analysis_id,
-        message: `Análise iniciada com sucesso! ID da análise: ${analysisResponse.analysis_id}. Status: ${analysisResponse.status}`,
+        message: `Análise iniciada com sucesso para o arquivo "${fileName}"! ID da análise: ${analysisResponse.analysis_id}. Status: ${analysisResponse.status}`,
         status: analysisResponse.status,
-        fileName: fileName
+        fileName: fileName,
+        fileKey: fileKey
       }
     } catch (error) {
-      console.error('❌ Error in uploadAndAnalyzeDataTool:', error)
+      console.error('❌ Error in startAnalysisFromUploadTool:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erro desconhecido',
-        message: `Falha ao fazer upload e analisar os dados: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+        message: `Falha ao iniciar análise dos dados: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
       }
     }
   }

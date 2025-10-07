@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@/lib/utils'
-import { PresignedUrlRequest, PresignedUrlResponse, AnalysisStartRequest, AnalysisStartResponse, AnalysisStatus, EdaAnalysisResponse } from '@/types/eda'
+import { PresignedUrlResponse, AnalysisStartRequest, AnalysisStartResponse, AnalysisStatus, EdaAnalysisResponse } from '@/types/eda'
 
 export class EdaService {
   static async getPresignedUrl(fileName: string): Promise<PresignedUrlResponse> {
@@ -8,11 +8,6 @@ export class EdaService {
       headers: {
         'Content-Type': 'application/json',
       },
-      // body: JSON.stringify({
-      //   filename: fileName,
-      //   folder: 'uploads',
-      //   content_type: 'text/csv'
-      // } as PresignedUrlRequest),
     })
 
     if (!response.ok) {
@@ -24,7 +19,6 @@ export class EdaService {
   }
 
   static async uploadToR2(upload_url: string, file: File): Promise<void> {
-    console.log('uload_url', upload_url);
     const response = await fetch(upload_url, {
       method: 'PUT',
       body: file,
@@ -32,8 +26,6 @@ export class EdaService {
         'Content-Type': 'text/csv',
       },
     })
-
-    console.log('response', response)
 
     if (!response.ok) {
       throw new Error(`Failed to upload file: ${response.statusText}`)

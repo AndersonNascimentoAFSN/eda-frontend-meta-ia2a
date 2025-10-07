@@ -16,26 +16,18 @@ export function Chat() {
     }),
   })
 
-  const handleFileSelect = async (file: File) => {
+  const handleFileUploaded = async (fileKey: string, fileName: string, fileSize: number) => {
     try {
-      // Converter arquivo para base64
-      const reader = new FileReader()
-      reader.onload = async () => {
-        const base64Content = reader.result?.toString().split(',')[1]
-        if (base64Content) {
-          // Enviar uma única mensagem com texto visível e dados ocultos
-          sendMessage({
-            text: `Carreguei um arquivo CSV "${file.name}" para análise. Por favor, processe-o e inicie a análise exploratória de dados.
-
-[DADOS_ARQUIVO] ARQUIVO_CSV_BASE64: ${base64Content} NOME_ARQUIVO: ${file.name}`
-          })
-        }
-      }
-      reader.readAsDataURL(file)
-    } catch (error) {
-      console.error('Error uploading file:', error)
+      // Enviar mensagem informando sobre o upload e solicitando análise
+      const fileSizeMB = Math.round((fileSize / 1024 / 1024) * 100) / 100
+      
       sendMessage({
-        text: `Erro ao carregar o arquivo "${file.name}". Por favor, tente novamente.`,
+        text: `Arquivo "${fileName}" (${fileSizeMB}MB) foi enviado com sucesso! Por favor, inicie a análise exploratória de dados usando a chave do arquivo: ${fileKey}`
+      })
+    } catch (error) {
+      console.error('Error handling file upload:', error)
+      sendMessage({
+        text: `Erro ao processar o arquivo "${fileName}". Por favor, tente fazer o upload novamente.`,
       })
     }
   }
@@ -76,7 +68,7 @@ export function Chat() {
               </p>
 
               <FileUpload
-                onFileSelect={handleFileSelect}
+                onFileUploaded={handleFileUploaded}
               // disabled={isLoading} 
               />
             </div>
@@ -104,14 +96,8 @@ export function Chat() {
                   {message.parts?.map((part, index) => {
                     switch (part.type) {
                       case 'text':
-                        // Filtrar apenas a parte dos dados, mantendo o texto principal
-                        const text = part.text
-                        const dadosIndex = text.indexOf('[DADOS_ARQUIVO]')
-                        if (dadosIndex !== -1) {
-                          return text.substring(0, dadosIndex).trim()
-                        }
                         return <Streamdown key={index}>{part.text}</Streamdown>
-                      case 'tool-uploadAndAnalyzeData': {
+                      case 'tool-startAnalysisFromUpload': {
                         const callId = part?.toolCallId;
 
                         switch (part.state) {
@@ -119,29 +105,30 @@ export function Chat() {
                             return (
                               <div key={callId} className="flex items-center space-x-2 text-blue-600">
                                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                <span>Preparando upload do arquivo...</span>
+                                <span>Preparando análise do arquivo...</span>
                               </div>
                             )
                           case 'input-available':
                             return (
                               <div key={callId} className="flex items-center space-x-2 text-blue-600">
                                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                <span>Fazendo upload e iniciando análise...</span>
+                                <span>Iniciando análise exploratória...</span>
                               </div>
                             );
                           case 'output-available':
-                            const result = part?.output as { success?: boolean, fileName?: string, analysisId?: string, status?: string };
+                            const result = part?.output as { success?: boolean, fileName?: string, analysisId?: string, status?: string, fileKey?: string };
                             return (
                               <div key={callId} className="bg-green-50 border-l-4 border-green-400 p-3 rounded-r">
                                 <div className="flex items-center space-x-2">
                                   <span className="text-green-600">✅</span>
-                                  <span className="font-medium text-green-800">Upload Concluído!</span>
+                                  <span className="font-medium text-green-800">Análise Iniciada!</span>
                                 </div>
                                 {result?.success && (
                                   <div className="mt-2 text-sm text-green-700">
                                     <p>📄 Arquivo: <span className="font-medium">{result.fileName}</span></p>
                                     <p>🆔 ID da Análise: <span className="font-mono text-xs">{result.analysisId}</span></p>
                                     <p>📊 Status: <span className="capitalize">{result.status}</span></p>
+                                    <p>🔑 File Key: <span className="font-mono text-xs">{result.fileKey}</span></p>
                                   </div>
                                 )}
                               </div>
@@ -151,9 +138,9 @@ export function Chat() {
                               <div key={callId} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
                                 <div className="flex items-center space-x-2">
                                   <span className="text-red-600">❌</span>
-                                  <span className="font-medium text-red-800">Erro no Upload</span>
+                                  <span className="font-medium text-red-800">Erro na Análise</span>
                                 </div>
-                                <p className="mt-2 text-sm text-red-700">{part.errorText || 'Erro desconhecido durante o upload'}</p>
+                                <p className="mt-2 text-sm text-red-700">{part.errorText || 'Erro desconhecido durante o início da análise'}</p>
                               </div>
                             );
                         }
@@ -307,14 +294,39 @@ export function Chat() {
                   onChange={(e) => {
                     const file = e.target.files?.[0]
                     if (file) {
-                      if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
-                        handleFileSelect(file)
-                      } else {
-                        sendMessage({
-                          text: `❌ Formato de arquivo inválido. Por favor, selecione apenas arquivos CSV (.csv).`
-                        })
-                      }
-                      e.target.value = '' // Reset input
+                      (async () => {
+                        if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                          // Criar um FormData e fazer upload via API
+                          const formData = new FormData()
+                          formData.append('file', file)
+                          
+                          try {
+                            const response = await fetch('/api/upload', {
+                              method: 'POST',
+                              body: formData
+                            })
+                            
+                            const result = await response.json()
+                            
+                            if (result.success) {
+                              handleFileUploaded(result.file_key, result.fileName, result.fileSize)
+                            } else {
+                              sendMessage({
+                                text: `❌ Erro no upload: ${result.error}`
+                              })
+                            }
+                          } catch (error) {
+                            sendMessage({
+                              text: `❌ Erro no upload: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+                            })
+                          }
+                        } else {
+                          sendMessage({
+                            text: `❌ Formato de arquivo inválido. Por favor, selecione apenas arquivos CSV (.csv).`
+                          })
+                        }
+                        e.target.value = '' // Reset input
+                      })()
                     }
                   }}
                   className="hidden"
