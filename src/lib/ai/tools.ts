@@ -11,7 +11,7 @@ export const startAnalysisFromUploadTool = tool({
   inputSchema: z.object({
     fileKey: z.string().describe('File key from the upload (received after successful file upload)'),
     fileName: z.string().describe('Original name of the uploaded CSV file'),
-    analysisType: z.enum(AnalysisTypeEnum).optional().describe('Type of analysis to perform (optional)')
+    analysisType: z.enum(AnalysisTypeEnum).optional().default(AnalysisTypeEnum.BASIC_EDA).describe('Type of analysis to perform (optional)')
   }),
   execute: async ({ fileKey, fileName, analysisType }) => {
     try {
@@ -38,10 +38,15 @@ export const startAnalysisFromUploadTool = tool({
       }
     } catch (error) {
       console.error('❌ Error in startAnalysisFromUploadTool:', error)
+      
+      // Garantir que sempre retornamos um objeto válido
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-        message: `Falha ao iniciar análise dos dados: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+        error: errorMessage,
+        message: `Falha ao iniciar análise dos dados: ${errorMessage}`,
+        fileName: fileName,
+        fileKey: fileKey
       }
     }
   }

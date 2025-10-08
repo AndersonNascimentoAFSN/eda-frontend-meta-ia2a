@@ -97,21 +97,21 @@ export function Chat() {
                   {message.parts?.map((part, index) => {
                     switch (part.type) {
                       case 'text':
-                        return <Streamdown key={index}>{part.text}</Streamdown>
+                        return <Streamdown key={`text-${index}`}>{part.text}</Streamdown>
                       case 'tool-startAnalysisFromUpload': {
-                        const callId = part?.toolCallId;
+                        const callId = part?.toolCallId || `start-${index}`;
 
                         switch (part.state) {
                           case 'input-streaming':
                             return (
-                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                              <div key={`${callId}-streaming`} className="flex items-center space-x-2 text-blue-600">
                                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                 <span>Preparando análise do arquivo...</span>
                               </div>
                             )
                           case 'input-available':
                             return (
-                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                              <div key={`${callId}-input`} className="flex items-center space-x-2 text-blue-600">
                                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                 <span>Iniciando análise exploratória...</span>
                               </div>
@@ -119,7 +119,7 @@ export function Chat() {
                           case 'output-available':
                             const result = part?.output as { success?: boolean, fileName?: string, analysisId?: string, status?: string, fileKey?: string };
                             return (
-                              <div key={callId} className="bg-green-50 border-l-4 border-green-400 p-3 rounded-r">
+                              <div key={`${callId}-output`} className="bg-green-50 border-l-4 border-green-400 p-3 rounded-r">
                                 <div className="flex items-center space-x-2">
                                   <span className="text-green-600">✅</span>
                                   <span className="font-medium text-green-800">Análise Iniciada!</span>
@@ -136,7 +136,7 @@ export function Chat() {
                             );
                           case 'output-error':
                             return (
-                              <div key={callId} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
+                              <div key={`${callId}-error`} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
                                 <div className="flex items-center space-x-2">
                                   <span className="text-red-600">❌</span>
                                   <span className="font-medium text-red-800">Erro na Análise</span>
@@ -148,19 +148,19 @@ export function Chat() {
                       }
 
                       case 'tool-checkAnalysisStatus': {
-                        const callId = part?.toolCallId;
+                        const callId = part?.toolCallId || `status-${index}`;
 
                         switch (part.state) {
                           case 'input-streaming':
                             return (
-                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                              <div key={`${callId}-streaming`} className="flex items-center space-x-2 text-blue-600">
                                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                 <span>Verificando status da análise...</span>
                               </div>
                             );
                           case 'input-available':
                             return (
-                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                              <div key={`${callId}-input`} className="flex items-center space-x-2 text-blue-600">
                                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                 <span>Consultando progresso...</span>
                               </div>
@@ -168,7 +168,7 @@ export function Chat() {
                           case 'output-available':
                             const statusResult = part?.output as { success?: boolean, status?: string, progress?: number, isComplete?: boolean, message?: string };
                             return (
-                              <div key={callId} className={`border-l-4 p-3 rounded-r ${statusResult?.isComplete ? 'bg-green-50 border-green-400' : 'bg-blue-50 border-blue-400'
+                              <div key={`${callId}-output`} className={`border-l-4 p-3 rounded-r ${statusResult?.isComplete ? 'bg-green-50 border-green-400' : 'bg-blue-50 border-blue-400'
                                 }`}>
                                 <div className="flex items-center space-x-2">
                                   <span>{statusResult?.isComplete ? '✅' : '🔄'}</span>
@@ -201,7 +201,7 @@ export function Chat() {
                             );
                           case 'output-error':
                             return (
-                              <div key={callId} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
+                              <div key={`${callId}-error`} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
                                 <div className="flex items-center space-x-2">
                                   <span className="text-red-600">❌</span>
                                   <span className="font-medium text-red-800">Erro ao Verificar Status</span>
@@ -213,19 +213,19 @@ export function Chat() {
                       }
 
                       case 'tool-getAnalysisResult': {
-                        const callId = part?.toolCallId;
+                        const callId = part?.toolCallId || `result-${index}`;
 
                         switch (part.state) {
                           case 'input-streaming':
                             return (
-                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                              <div key={`${callId}-streaming`} className="flex items-center space-x-2 text-blue-600">
                                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                 <span>Preparando relatório de resultados...</span>
                               </div>
                             )
                           case 'input-available':
                             return (
-                              <div key={callId} className="flex items-center space-x-2 text-blue-600">
+                              <div key={`${callId}-input`} className="flex items-center space-x-2 text-blue-600">
                                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                 <span>Obtendo resultados da análise...</span>
                               </div>
@@ -233,7 +233,7 @@ export function Chat() {
                           case 'output-available':
                             const analysisResult = part?.output as { success?: boolean, results?: Record<string, unknown>, analysisId?: string };
                             return (
-                              <div key={callId} className="bg-green-50 border-l-4 border-green-400 p-3 rounded-r">
+                              <div key={`${callId}-output`} className="bg-green-50 border-l-4 border-green-400 p-3 rounded-r">
                                 <div className="flex items-center space-x-2">
                                   <span className="text-green-600">📊</span>
                                   <span className="font-medium text-green-800">Resultados da Análise</span>
@@ -250,7 +250,7 @@ export function Chat() {
                             );
                           case 'output-error':
                             return (
-                              <div key={callId} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
+                              <div key={`${callId}-error`} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
                                 <div className="flex items-center space-x-2">
                                   <span className="text-red-600">❌</span>
                                   <span className="font-medium text-red-800">Erro ao Obter Resultados</span>
