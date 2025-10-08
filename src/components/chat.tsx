@@ -58,7 +58,7 @@ export function Chat() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 max-w-none">
           {messages.length === 0 && (
             <div className="text-center py-12">
               <Bot className="mx-auto h-16 w-16 text-gray-400 mb-6" />
@@ -89,9 +89,9 @@ export function Chat() {
               )}
 
               <div
-                className={`max-w-xs lg:max-w-2xl px-4 py-3 rounded-lg ${message.role === 'user'
-                  ? 'bg-blue-500 text-white rounded-br-sm'
-                  : 'bg-gray-100 text-gray-900 rounded-bl-sm'
+                className={`px-4 py-3 rounded-lg ${message.role === 'user'
+                  ? 'bg-blue-500 text-white rounded-br-sm max-w-xs lg:max-w-2xl'
+                  : 'bg-gray-100 text-gray-900 rounded-bl-sm w-full max-w-[max-content]'
                   }`}
               >
                 <div className="whitespace-pre-wrap text-sm leading-relaxed">
