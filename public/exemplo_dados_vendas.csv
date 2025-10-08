@@ -1,0 +1,95 @@
+produto,categoria,vendas,preco,regiao,mes,satisfacao,idade_cliente,tempo_entrega,promocao
+Notebook Dell,Eletrônicos,850,2500.00,Norte,Janeiro,4.2,28,5,Sim
+Mouse Gamer,Eletrônicos,1200,150.00,Sul,Janeiro,4.5,22,3,Não
+Teclado Mecânico,Eletrônicos,680,300.00,Sudeste,Janeiro,4.1,35,4,Sim
+Monitor 24",Eletrônicos,420,800.00,Norte,Janeiro,4.3,41,6,Não
+Smartphone Samsung,Eletrônicos,950,1800.00,Sul,Janeiro,4.0,29,7,Sim
+Tablet iPad,Eletrônicos,320,2200.00,Nordeste,Janeiro,4.6,33,4,Não
+Fone Bluetooth,Eletrônicos,1500,200.00,Sudeste,Janeiro,4.4,26,2,Sim
+Carregador Portátil,Eletrônicos,800,80.00,Centro-Oeste,Janeiro,3.9,31,3,Não
+SSD 1TB,Eletrônicos,600,450.00,Norte,Janeiro,4.7,38,5,Sim
+Câmera Canon,Eletrônicos,180,3500.00,Sul,Janeiro,4.8,45,8,Não
+Livro Python,Livros,300,85.00,Sudeste,Janeiro,4.3,27,10,Sim
+Livro JavaScript,Livros,280,75.00,Norte,Janeiro,4.1,24,12,Não
+Livro Data Science,Livros,220,120.00,Sul,Janeiro,4.5,32,9,Sim
+Livro Machine Learning,Livros,150,95.00,Nordeste,Janeiro,4.2,29,11,Não
+Romance Ficção,Livros,450,45.00,Sudeste,Janeiro,3.8,35,8,Sim
+Biografia Steve Jobs,Livros,180,65.00,Centro-Oeste,Janeiro,4.4,41,7,Não
+Curso Online Python,Educação,120,350.00,Norte,Janeiro,4.6,26,1,Sim
+Curso Online React,Educação,95,280.00,Sul,Janeiro,4.3,23,1,Não
+Curso Online AWS,Educação,85,450.00,Sudeste,Janeiro,4.7,34,1,Sim
+Curso Online Docker,Educação,70,320.00,Nordeste,Janeiro,4.2,31,1,Não
+Camiseta Polo,Roupas,890,80.00,Norte,Fevereiro,3.9,28,5,Sim
+Calça Jeans,Roupas,650,120.00,Sul,Fevereiro,4.1,32,6,Não
+Tênis Nike,Roupas,420,350.00,Sudeste,Fevereiro,4.5,25,4,Sim
+Jaqueta Couro,Roupas,180,450.00,Norte,Fevereiro,4.3,38,7,Não
+Vestido Elegante,Roupas,320,200.00,Sul,Fevereiro,4.2,29,5,Sim
+Blusa Tricot,Roupas,480,95.00,Nordeste,Fevereiro,3.8,33,4,Não
+Shorts Esportivo,Roupas,710,60.00,Sudeste,Fevereiro,4.0,24,3,Sim
+Sapato Social,Roupas,290,280.00,Centro-Oeste,Fevereiro,4.4,42,6,Não
+Notebook HP,Eletrônicos,720,2200.00,Norte,Fevereiro,4.1,30,5,Sim
+Mouse Sem Fio,Eletrônicos,980,120.00,Sul,Fevereiro,4.3,26,3,Não
+Teclado Bluetooth,Eletrônicos,550,250.00,Sudeste,Fevereiro,4.2,36,4,Sim
+Monitor 27",Eletrônicos,380,950.00,Norte,Fevereiro,4.5,40,6,Não
+iPhone 14,Eletrônicos,850,4500.00,Sul,Fevereiro,4.7,31,7,Sim
+Tablet Samsung,Eletrônicos,280,1800.00,Nordeste,Fevereiro,4.4,34,4,Não
+Fone com Fio,Eletrônicos,1200,50.00,Sudeste,Fevereiro,3.6,22,2,Sim
+Power Bank,Eletrônicos,650,120.00,Centro-Oeste,Fevereiro,4.0,28,3,Não
+HD Externo 2TB,Eletrônicos,450,350.00,Norte,Fevereiro,4.3,37,5,Sim
+Câmera Sony,Eletrônicos,120,4200.00,Sul,Fevereiro,4.9,46,8,Não
+Livro React Native,Livros,250,95.00,Sudeste,Fevereiro,4.2,25,10,Sim
+Livro Node.js,Livros,210,85.00,Norte,Fevereiro,4.0,27,12,Não
+Livro Deep Learning,Livros,180,140.00,Sul,Fevereiro,4.6,33,9,Sim
+Livro DevOps,Livros,130,110.00,Nordeste,Fevereiro,4.1,30,11,Não
+Thriller Suspense,Livros,380,50.00,Sudeste,Fevereiro,3.9,36,8,Sim
+Autoajuda Sucesso,Livros,220,55.00,Centro-Oeste,Fevereiro,4.3,39,7,Não
+Curso Online Angular,Educação,110,380.00,Norte,Março,4.5,28,1,Sim
+Curso Online Vue,Educação,85,300.00,Sul,Março,4.2,24,1,Não
+Curso Online GCP,Educação,75,480.00,Sudeste,Março,4.8,35,1,Sim
+Curso Online Kubernetes,Educação,65,420.00,Nordeste,Março,4.3,32,1,Não
+Camisa Social,Roupas,720,150.00,Norte,Março,4.0,29,5,Sim
+Calça Social,Roupas,580,180.00,Sul,Março,4.2,33,6,Não
+Tênis Adidas,Roupas,390,380.00,Sudeste,Março,4.4,26,4,Sim
+Casaco Inverno,Roupas,210,520.00,Norte,Março,4.6,39,7,Não
+Saia Midi,Roupas,350,140.00,Sul,Março,4.1,30,5,Sim
+Cardigan Lã,Roupas,420,180.00,Nordeste,Março,3.9,34,4,Não
+Bermuda Jeans,Roupas,680,85.00,Sudeste,Março,3.8,25,3,Sim
+Bota Couro,Roupas,260,380.00,Centro-Oeste,Março,4.5,41,6,Não
+MacBook Pro,Eletrônicos,450,8500.00,Norte,Março,4.9,35,5,Sim
+Mouse Apple,Eletrônicos,620,300.00,Sul,Março,4.6,28,3,Não
+Teclado Apple,Eletrônicos,380,450.00,Sudeste,Março,4.7,37,4,Sim
+Monitor 32",Eletrônicos,220,1200.00,Norte,Março,4.8,43,6,Não
+Galaxy S23,Eletrônicos,680,3800.00,Sul,Março,4.5,32,7,Sim
+iPad Pro,Eletrônicos,180,5200.00,Nordeste,Março,4.9,36,4,Não
+AirPods Pro,Eletrônicos,950,1200.00,Sudeste,Março,4.7,27,2,Sim
+Carregador Wireless,Eletrônicos,520,180.00,Centro-Oeste,Março,4.1,29,3,Não
+SSD 2TB,Eletrônicos,320,850.00,Norte,Março,4.8,38,5,Sim
+Câmera Nikon,Eletrônicos,95,5500.00,Sul,Março,4.9,47,8,Não
+Livro Flutter,Livros,200,105.00,Sudeste,Abril,4.3,26,10,Sim
+Livro Golang,Livros,180,90.00,Norte,Abril,4.1,28,12,Não
+Livro AI Ethics,Livros,150,160.00,Sul,Abril,4.7,34,9,Sim
+Livro Cloud Computing,Livros,110,125.00,Nordeste,Abril,4.2,31,11,Não
+Romance Histórico,Livros,320,55.00,Sudeste,Abril,4.0,37,8,Sim
+Manual Investimentos,Livros,190,75.00,Centro-Oeste,Abril,4.4,40,7,Não
+Curso Online TypeScript,Educação,95,350.00,Norte,Abril,4.6,27,1,Sim
+Curso Online GraphQL,Educação,75,320.00,Sul,Abril,4.3,25,1,Não
+Curso Online Azure,Educação,68,500.00,Sudeste,Abril,4.7,36,1,Sim
+Curso Online Terraform,Educação,58,450.00,Nordeste,Abril,4.2,33,1,Não
+Polo Manga Longa,Roupas,650,95.00,Norte,Abril,3.8,30,5,Sim
+Jeans Skinny,Roupas,520,140.00,Sul,Abril,4.1,31,6,Não
+Tênis Puma,Roupas,360,320.00,Sudeste,Abril,4.3,27,4,Sim
+Blazer Feminino,Roupas,180,380.00,Norte,Abril,4.5,40,7,Não
+Top Fitness,Roupas,480,65.00,Sul,Abril,3.9,25,5,Sim
+Legging Esportiva,Roupas,580,75.00,Nordeste,Abril,4.0,28,4,Não
+Chinelo Havaianas,Roupas,820,35.00,Sudeste,Abril,3.7,24,3,Sim
+Sandália Couro,Roupas,240,220.00,Centro-Oeste,Abril,4.2,38,6,Não
+Surface Pro,Eletrônicos,280,6200.00,Norte,Maio,4.6,34,5,Sim
+Mouse Microsoft,Eletrônicos,720,180.00,Sul,Maio,4.2,29,3,Não
+Teclado Gamer RGB,Eletrônicos,420,380.00,Sudeste,Maio,4.5,31,4,Sim
+Monitor Ultrawide,Eletrônicos,150,1800.00,Norte,Maio,4.8,44,6,Não
+Pixel 7,Eletrônicos,520,2800.00,Sul,Maio,4.4,30,7,Sim
+Tab S8,Eletrônicos,220,2200.00,Nordeste,Maio,4.3,35,4,Não
+Fone Gaming,Eletrônicos,680,280.00,Sudeste,Maio,4.1,26,2,Sim
+Hub USB-C,Eletrônicos,380,150.00,Centro-Oeste,Maio,3.9,32,3,Não
+NVMe 1TB,Eletrônicos,290,520.00,Norte,Maio,4.6,39,5,Sim
+Action Cam,Eletrônicos,85,1200.00,Sul,Maio,4.7,42,8,Não

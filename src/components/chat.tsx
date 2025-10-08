@@ -5,6 +5,7 @@ import { useChat } from '@ai-sdk/react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { FileUploadDirect } from '@/components/file-upload-direct'
+import { Chart } from '@/components/chart/Chart'
 import { Send, Bot, User, BarChart3, Paperclip } from 'lucide-react'
 import { Streamdown } from 'streamdown';
 
@@ -113,7 +114,7 @@ export function Chat() {
                             return (
                               <div key={`${callId}-input`} className="flex items-center space-x-2 text-blue-600">
                                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                <span>Iniciando análise exploratória...</span>
+                                <span>Solicitando a análise exploratória...</span>
                               </div>
                             );
                           case 'output-available':
@@ -212,6 +213,135 @@ export function Chat() {
                         }
                       }
 
+                      case 'tool-generateChartData': {
+                        const callId = part?.toolCallId || `chart-${index}`;
+
+                        switch (part.state) {
+                          case 'input-streaming':
+                            return (
+                              <div key={`${callId}-streaming`} className="flex items-center space-x-2 text-blue-600">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Preparando dados de visualização...</span>
+                              </div>
+                            )
+                          case 'input-available':
+                            return (
+                              <div key={`${callId}-input`} className="flex items-center space-x-2 text-blue-600">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Gerando gráfico...</span>
+                              </div>
+                            );
+                          case 'output-available':
+                            const chartResult = part?.output as { 
+                              success?: boolean, 
+                              chartType?: string, 
+                              dataPoints?: number, 
+                              chartData?: { value: string | number, count: number }[],
+                              chartConfig?: { title: string, xLabel: string, yLabel: string }
+                            };
+                            
+                            console.log('🔍 Chart result received in chat:', chartResult);
+                            
+                            return (
+                              <div key={`${callId}-output`} className="bg-purple-50 border-l-4 border-purple-400 p-3 rounded-r">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-purple-600">📊</span>
+                                  <span className="font-medium text-purple-800">Gráfico Gerado!</span>
+                                </div>
+                                {chartResult?.success && (
+                                  <div className="mt-2 text-sm text-purple-700">
+                                    <p>📈 Tipo: <span className="font-medium capitalize">{chartResult.chartType}</span></p>
+                                    <p>📊 Pontos de dados: <span className="font-medium">{chartResult.dataPoints}</span></p>
+                                    {chartResult.chartConfig?.title && (
+                                      <p>🏷️ Título: <span className="font-medium">{chartResult.chartConfig.title}</span></p>
+                                    )}
+                                    {chartResult.chartData && chartResult.chartData.length > 0 && (
+                                      <div className="mt-3 space-y-4">
+                                        {/* Preview dos dados */}
+                                        <div className="p-3 bg-white rounded border">
+                                          <p className="font-medium mb-2">Primeiros dados:</p>
+                                          <div className="text-xs space-y-1">
+                                            {chartResult.chartData.slice(0, 3).map((point, i) => (
+                                              <div key={i} className="flex justify-between">
+                                                <span className="truncate max-w-32">{point.value}</span>
+                                                <span className="font-mono">{point.count}</span>
+                                              </div>
+                                            ))}
+                                            {chartResult.chartData.length > 3 && (
+                                              <div className="text-gray-500">... e mais {chartResult.chartData.length - 3} pontos</div>
+                                            )}
+                                          </div>
+                                        </div>
+                                        
+                                        {/* Gráfico Visual */}
+                                        <div className="border rounded-lg p-4 bg-white">
+                                          <p className="text-xs text-gray-500 mb-2">🔍 Debug: Renderizando gráfico com {chartResult.chartData.length} pontos</p>
+                                          <Chart
+                                            data={chartResult.chartData}
+                                            chartType={chartResult.chartType as 'histogram' | 'bar' | 'line' | 'scatter' | 'correlation_heatmap' | 'missing_values' | 'outliers' | 'distribution' | 'boxplot' | 'density'}
+                                            title={chartResult.chartConfig?.title}
+                                            xLabel={chartResult.chartConfig?.xLabel}
+                                            yLabel={chartResult.chartConfig?.yLabel}
+                                            width={600}
+                                            height={350}
+                                          />
+                                          <p className="text-xs text-gray-500 mt-2">📊 Componente Chart renderizado</p>
+                                        </div>
+                                      </div>
+                                    )}
+                                    {(!chartResult.chartData || chartResult.chartData.length === 0) && (
+                                      <div className="mt-3 space-y-3">
+                                        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
+                                          <div className="flex items-start space-x-2">
+                                            <span className="text-yellow-600 mt-0.5">⚠️</span>
+                                            <div>
+                                              <p className="text-yellow-800 text-sm font-medium">Nenhum dado encontrado para este gráfico</p>
+                                              <p className="text-yellow-700 text-xs mt-1">
+                                                Tipo: <span className="font-medium">{chartResult.chartType}</span> • 
+                                                Pontos retornados: <span className="font-medium">{chartResult.dataPoints}</span>
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        
+                                        <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                                          <div className="flex items-start space-x-2">
+                                            <span className="text-blue-600 mt-0.5">💡</span>
+                                            <div>
+                                              <p className="text-blue-800 text-sm font-medium">Sugestões para resolver:</p>
+                                              <ul className="text-blue-700 text-xs mt-1 space-y-1">
+                                                <li>• Verifique se o nome da coluna está correto</li>
+                                                <li>• Para scatter plots, certifique-se de que existem duas colunas numéricas</li>
+                                                <li>• Para gráficos de barras, use colunas categóricas com dados</li>
+                                                <li>• Experimente primeiro ver as sugestões de colunas disponíveis</li>
+                                              </ul>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                {!chartResult?.success && (
+                                  <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded">
+                                    <p className="text-red-800 text-sm">❌ Falha ao gerar gráfico</p>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          case 'output-error':
+                            return (
+                              <div key={`${callId}-error`} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-red-600">❌</span>
+                                  <span className="font-medium text-red-800">Erro ao Gerar Gráfico</span>
+                                </div>
+                                <p className="mt-2 text-sm text-red-700">{part.errorText || 'Erro desconhecido ao gerar visualização'}</p>
+                              </div>
+                            );
+                        }
+                      }
+
                       case 'tool-getAnalysisResult': {
                         const callId = part?.toolCallId || `result-${index}`;
 
@@ -256,6 +386,114 @@ export function Chat() {
                                   <span className="font-medium text-red-800">Erro ao Obter Resultados</span>
                                 </div>
                                 <p className="mt-2 text-sm text-red-700">{part.errorText || 'Erro desconhecido ao buscar resultados'}</p>
+                              </div>
+                            );
+                        }
+                      }
+
+                      case 'tool-suggestChartColumns': {
+                        const callId = part?.toolCallId || `suggest-${index}`;
+
+                        switch (part.state) {
+                          case 'input-streaming':
+                            return (
+                              <div key={`${callId}-streaming`} className="flex items-center space-x-2 text-blue-600">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Analisando dados disponíveis...</span>
+                              </div>
+                            )
+                          case 'input-available':
+                            return (
+                              <div key={`${callId}-input`} className="flex items-center space-x-2 text-blue-600">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Sugerindo colunas apropriadas...</span>
+                              </div>
+                            );
+                          case 'output-available':
+                            const suggestions = part?.output as { 
+                              success?: boolean, 
+                              suggestions?: { 
+                                chart_type: string,
+                                recommended_columns: Record<string, unknown>[],
+                                explanations?: Record<string, string>,
+                                examples?: Record<string, unknown>
+                              }, 
+                              total_recommendations?: number 
+                            };
+                            
+                            return (
+                              <div key={`${callId}-output`} className="bg-indigo-50 border-l-4 border-indigo-400 p-4 rounded-r">
+                                <div className="flex items-center space-x-2 mb-3">
+                                  <span className="text-indigo-600">🎯</span>
+                                  <span className="font-medium text-indigo-800">Sugestões de Colunas para Gráficos</span>
+                                </div>
+                                {suggestions?.success && suggestions.suggestions && (
+                                  <div className="text-sm text-indigo-700 space-y-4">
+                                    <div className="bg-white p-3 rounded border">
+                                      <p className="font-medium mb-2">📊 Tipo de Gráfico: <span className="capitalize text-indigo-600">{suggestions.suggestions.chart_type}</span></p>
+                                      <p>📋 {suggestions.total_recommendations} opções encontradas</p>
+                                    </div>
+
+                                    {suggestions.suggestions.recommended_columns.length > 0 ? (
+                                      <div className="space-y-3">
+                                        <p className="font-medium text-indigo-800">🏆 Colunas Recomendadas:</p>
+                                        {suggestions.suggestions.recommended_columns.slice(0, 5).map((col: Record<string, unknown>, idx: number) => (
+                                          <div key={idx} className="bg-white p-3 rounded border-l-4 border-indigo-200">
+                                            <div className="flex justify-between items-start mb-2">
+                                              <span className="font-medium text-gray-900">{String(col.name || '')}</span>
+                                              <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-800">
+                                                {String(col.data_quality || 'N/A')}
+                                              </span>
+                                            </div>
+                                            
+                                            <div className="text-xs text-gray-600 space-y-1">
+                                              <p>📊 Coluna: {String(col.name || 'N/A')}</p>
+                                              <p>✨ Qualidade: {String(col.data_quality || 'N/A')}</p>
+                                              <p>� Detalhes: {JSON.stringify(col).slice(0, 100)}...</p>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <div className="bg-yellow-50 border border-yellow-200 p-3 rounded">
+                                        <p className="text-yellow-800 text-sm">⚠️ Nenhuma coluna apropriada encontrada para este tipo de gráfico</p>
+                                      </div>
+                                    )}
+
+                                    {/* Explicações */}
+                                    {suggestions.suggestions.explanations && (
+                                      <div className="bg-white p-3 rounded border">
+                                        <p className="font-medium text-gray-800 mb-2">💡 Explicações:</p>
+                                        <div className="text-xs text-gray-600 space-y-1">
+                                          {suggestions.suggestions.explanations.why_these_columns && (
+                                            <p>• <strong>Por que essas colunas:</strong> {suggestions.suggestions.explanations.why_these_columns}</p>
+                                          )}
+                                          {suggestions.suggestions.explanations.data_source && (
+                                            <p>• <strong>Fonte dos dados:</strong> {suggestions.suggestions.explanations.data_source}</p>
+                                          )}
+                                          {suggestions.suggestions.explanations.limitations && (
+                                            <p>• <strong>Limitações:</strong> {suggestions.suggestions.explanations.limitations}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                {!suggestions?.success && (
+                                  <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded">
+                                    <p className="text-red-800 text-sm">❌ Erro ao obter sugestões de colunas</p>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          case 'output-error':
+                            return (
+                              <div key={`${callId}-error`} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-red-600">❌</span>
+                                  <span className="font-medium text-red-800">Erro ao Sugerir Colunas</span>
+                                </div>
+                                <p className="mt-2 text-sm text-red-700">{part.errorText || 'Erro desconhecido ao analisar colunas'}</p>
                               </div>
                             );
                         }
