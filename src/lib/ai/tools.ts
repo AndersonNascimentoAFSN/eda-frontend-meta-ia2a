@@ -6,6 +6,55 @@ import { AnalysisTypeEnum } from '@/types/eda'
 // Armazenar análises ativas na sessão
 const activeAnalyses = new Map<string, string>()
 
+export const diagnosePlatformTool = tool({
+  description: 'Diagnose platform-specific issues between local and Vercel environments',
+  inputSchema: z.object({}),
+  execute: async () => {
+    try {
+      const diagnostics: Record<string, unknown> = {
+        platform: typeof window !== 'undefined' ? 'client' : 'server',
+        apiBaseUrl: process.env.NEXT_PUBLIC_EDA_BACKEND_URL || 'http://localhost:8000',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
+        vercel: process.env.VERCEL === '1',
+        deployment: process.env.VERCEL_ENV || 'local'
+      }
+
+      // Teste de conectividade básica
+      try {
+        const response = await fetch(`${diagnostics.apiBaseUrl}/api/v1/health`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(10000)
+        })
+        diagnostics.backendConnectivity = {
+          status: response.status,
+          ok: response.ok,
+          statusText: response.statusText
+        }
+      } catch (error) {
+        diagnostics.backendConnectivity = {
+          error: error instanceof Error ? error.message : 'Erro desconhecido'
+        }
+      }
+
+      const connectivity = diagnostics.backendConnectivity as { ok?: boolean } | { error: string }
+      const isOk = 'ok' in connectivity ? connectivity.ok : false
+
+      return {
+        success: true,
+        diagnostics,
+        message: `Diagnóstico: ${diagnostics.vercel ? 'Vercel' : 'Local'} - Backend: ${isOk ? 'OK' : 'ERRO'}`
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+        message: 'Falha no diagnóstico da plataforma'
+      }
+    }
+  }
+})
+
 export const startAnalysisFromUploadTool = tool({
   description: 'Start data analysis using a pre-uploaded CSV file. Use this after a file has been uploaded via the upload interface.',
   inputSchema: z.object({
@@ -68,31 +117,8 @@ export const checkAnalysisStatusTool = tool({
         }
       }
 
+      console.log(`🔍 Checking status for analysis: ${targetAnalysisId}`)
       const status = await EdaService.getAnalysisStatus(targetAnalysisId)
-
-      // if (status.status === 'completed') {
-      //   // Se completado, buscar resultados
-      //   const result = await EdaService.getAnalysisResult(targetAnalysisId)
-
-      //   return {
-      //     success: true,
-      //     analysisId: result.analysis_id,
-      //     status: status.status,
-      //     progress: status.progress,
-      //     message: status.message,
-      //     results: result.results,
-      //     isComplete: true
-      //   }
-      // } else {
-      //   return {
-      //     success: true,
-      //     analysisId: targetAnalysisId,
-      //     status: status.status,
-      //     progress: status.progress,
-      //     message: status.message,
-      //     isComplete: false
-      //   }
-      // }
 
       return {
         success: true,
@@ -100,13 +126,16 @@ export const checkAnalysisStatusTool = tool({
         status: status.status,
         progress: status.progress,
         message: status.message,
-        isComplete: false
+        isComplete: status.status === 'completed'
       }
     } catch (error) {
+      console.error('❌ Error in checkAnalysisStatusTool:', error)
+      
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-        message: 'Falha ao verificar status da análise'
+        error: errorMessage,
+        message: `Falha ao verificar status da análise: ${errorMessage}. Verifique se o backend está acessível e se a análise não expirou.`
       }
     }
   }
@@ -128,6 +157,7 @@ export const getAnalysisResultTool = tool({
         }
       }
 
+      console.log(`📋 Getting results for analysis: ${targetAnalysisId}`)
       const result = await EdaService.getAnalysisResult(targetAnalysisId)
 
       return {
@@ -137,10 +167,13 @@ export const getAnalysisResultTool = tool({
         results: result.results,
       }
     } catch (error) {
+      console.error('❌ Error in getAnalysisResultTool:', error)
+      
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-        message: 'Falha ao obter resultados da análise'
+        error: errorMessage,
+        message: `Falha ao obter resultados da análise: ${errorMessage}. Para arquivos grandes (160MB), o processamento pode demorar mais. Verifique se a análise foi concluída antes de solicitar os resultados.`
       }
     }
   }

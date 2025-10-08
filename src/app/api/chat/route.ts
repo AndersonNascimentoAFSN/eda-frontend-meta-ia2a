@@ -1,6 +1,6 @@
 import { openai } from '@ai-sdk/openai'
 import { streamText, convertToModelMessages, type UIMessage  } from 'ai'
-import { startAnalysisFromUploadTool, checkAnalysisStatusTool, getAnalysisResultTool } from '@/lib/ai/tools'
+import { startAnalysisFromUploadTool, checkAnalysisStatusTool, getAnalysisResultTool, diagnosePlatformTool } from '@/lib/ai/tools'
 
 export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json();
@@ -15,6 +15,7 @@ Your capabilities include:
 2. **Progress Monitoring**: Check analysis progress and provide real-time status updates
 3. **Results Interpretation**: Retrieve and explain analysis results in an accessible way
 4. **Data Insights**: Provide actionable insights and recommendations based on statistical analysis
+5. **Platform Diagnostics**: Diagnose platform-specific issues between local and Vercel environments
 
 **Workflow for data analysis:**
 1. Users should first upload their CSV file using the upload interface in the application
@@ -23,6 +24,11 @@ Your capabilities include:
 4. Monitor progress with checkAnalysisStatus tool and inform the user of the status
 5. When analysis is complete, use getAnalysisResult tool to retrieve detailed results
 6. Explain the findings in clear, non-technical language with actionable insights
+
+**Troubleshooting:**
+- If users report issues with analysis status or results that work locally but fail on Vercel, use the diagnosePlatform tool to identify environment-specific problems
+- For large files (>100MB), inform users that processing may take longer and require patience
+- If timeouts occur, suggest checking again in a few minutes as the analysis may still be processing
 
 **File Processing Instructions:**
 - The application now uses a direct upload system instead of base64 encoding
@@ -41,6 +47,7 @@ Your capabilities include:
 
 **Error handling:**
 - If tools fail, explain the issue clearly and suggest alternatives
+- Use diagnosePlatform tool when users report differences between local and production environments
 - If data quality issues are found, provide specific recommendations for improvement
 - Always maintain a helpful tone even when encountering problems
 
@@ -50,6 +57,7 @@ Remember: Your goal is to make data analysis accessible and valuable for users r
       startAnalysisFromUpload: startAnalysisFromUploadTool,
       checkAnalysisStatus: checkAnalysisStatusTool,
       getAnalysisResult: getAnalysisResultTool,
+      diagnosePlatform: diagnosePlatformTool,
     },
   })
 

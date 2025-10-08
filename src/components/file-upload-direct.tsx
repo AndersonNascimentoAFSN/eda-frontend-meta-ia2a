@@ -52,11 +52,11 @@ export function FileUploadDirect({ onFileUploaded, className }: FileUploadDirect
         return
       }
 
-      const maxSize = 200 * 1024 * 1024 // 200MB
+      const maxSize = 160 * 1024 * 1024 // 160MB
       if (file.size > maxSize) {
         setUploadState({
           status: 'error',
-          message: 'Arquivo muito grande. Máximo permitido: 200MB',
+          message: 'Arquivo muito grande. Máximo permitido: 160MB',
           progress: 0
         })
         return
